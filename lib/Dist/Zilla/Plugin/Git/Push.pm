@@ -77,10 +77,15 @@ sub after_release {
     my $self = shift;
     my $git  = $self->git;
 
+    my ($branch) = $git->RUN(qw(rev-parse --abbrev-ref HEAD))
+        or $self->log_fatal("Could not determine current branch to push");
+
     # push everything on remote branch
     for my $remote ( @{ $self->push_to } ) {
       $self->log("pushing to $remote");
       my @remote = split(/\s+/,$remote);
+      push @remote, $branch if @remote == 1;
+
       $self->log_debug($_) for $git->push( @remote );
       $self->log_debug($_) for $git->push( { tags=>1 },  $remote[0] );
     }
